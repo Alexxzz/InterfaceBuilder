@@ -5,6 +5,7 @@
 
 //@interface Node : NSObject
 //@property (nonatomic, copy) NSString *classString;
+//@property (nonatomic, copy) NSDictionary *attributes;
 //@property (nonatomic, strong) NSArray<Node *> *children;
 //
 //- (instancetype)initWithClassString:(NSString *)classString;
@@ -44,6 +45,7 @@
 @interface InterfaceBuilder () <NSXMLParserDelegate>
 @property (nonatomic, strong) UIView *rootView;
 @property (nonatomic, strong) NSMutableArray *stack;
+@property (nonatomic, assign) BOOL errorOccurred;
 @end
 
 @implementation InterfaceBuilder
@@ -57,6 +59,10 @@
     parser.delegate = self;
     [parser parse];
 
+    if (self.errorOccurred) {
+        return nil;
+    }
+
     return self.rootView;
 }
 
@@ -69,6 +75,7 @@
 {
     UIView *view = [self getViewFromClassString:elementName];
     if (view == nil) {
+        self.errorOccurred = YES;
         return;
     }
 

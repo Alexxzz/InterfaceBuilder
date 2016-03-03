@@ -144,8 +144,7 @@
 
     UIView *view = [interfaceBuilder buildFromString:@"<UIView> <SomeUnknownView /> </UIView>"];
 
-    assertThat(view, isA([UIView class]));
-    assertThat(view.subviews, isEmpty());
+    assertThat(view, nilValue());
 }
 
 - (void)testElementIsNotUIViewSubclass
@@ -154,8 +153,7 @@
 
     UIView *view = [interfaceBuilder buildFromString:@"<NSString> <UIView /> </NSString>"];
 
-    assertThat(view, isA([UIView class]));
-    assertThat(view.subviews, isEmpty());
+    assertThat(view, nilValue());
 }
 
 @end
