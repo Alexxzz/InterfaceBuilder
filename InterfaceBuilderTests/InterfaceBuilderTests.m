@@ -12,6 +12,7 @@
 #import <OCMockito/OCMockito.h>
 
 #import "InterfaceBuilder.h"
+#import "XMLInterfaceParser.h"
 
 
 #pragma mark - Custom view
@@ -26,33 +27,40 @@
 
 @implementation InterfaceBuilderTests
 
+- (InterfaceBuilder *)createBuilderWithInterfaceString:(NSString *)string
+{
+    XMLInterfaceParser *parser = [[XMLInterfaceParser alloc] initWithString:string];
+    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] initWithInterfaceParser:parser];
+    return interfaceBuilder;
+}
+
 - (void)testReadAndBuildInterfaceWithSingleView
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UIView />"];
 
-    UIView *view = [interfaceBuilder buildFromString:@"<UIView />"];
+    UIView *view = [interfaceBuilder build];
 
     assertThat(view, isA([UIView class]));
 }
 
 - (void)testReadAndBuildInterfaceWithSingleLabel
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UILabel />"];
 
-    UIView *view = [interfaceBuilder buildFromString:@"<UILabel />"];
+    UIView *view = [interfaceBuilder build];
 
     assertThat(view, isA([UILabel class]));
 }
 
 - (void)testOrganizeViewsInHierarchy
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
-
-    UIView *view = [interfaceBuilder buildFromString:
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:
             @"<UIView>"
                 "<UILabel />"
                 "<UIButton />"
             "</UIView>"];
+
+    UIView *view = [interfaceBuilder build];
 
     assertThat([view.subviews firstObject], isA([UILabel class]));
     assertThat([view.subviews lastObject], isA([UIButton class]));
@@ -60,9 +68,7 @@
 
 - (void)testOrganizeViewsInHierarchy_multipleNesting
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
-
-    UIView *view = [interfaceBuilder buildFromString:
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:
             @"<UIView>"
                 "<UIView>"
                     "<UILabel />"
@@ -73,6 +79,8 @@
                 "</UIView>"
             "</UIView>"];
 
+    UIView *view = [interfaceBuilder build];
+
     UIView *firstSubview = [view.subviews firstObject];
     UIView *secondSubview = [view.subviews lastObject];
     id firstSubviewSubview = [firstSubview.subviews firstObject];
@@ -81,31 +89,32 @@
     assertThat(secondSubviewSubview, isA([UIButton class]));
 }
 
-- (void)testMultipleRootElements
+- (void)testMultipleRunOfTheSameParserInstance
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UILabel />"];
 
-    UIView *view = [interfaceBuilder buildFromString:@"<UIView /><UILabel />"];
+    UIView *view1 = [interfaceBuilder build];
+    UIView *view2 = [interfaceBuilder build];
 
-    assertThat(view, isA([UIView class]));
-    assertThat(view.subviews, isEmpty());
+    assertThat(view1, isA([UILabel class]));
+    assertThat(view2, isA([UILabel class]));
 }
 
 #pragma mark - Custom view
 - (void)testCreatesCustomView
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<CustomView />"];
 
-    UIView *view = [interfaceBuilder buildFromString:@"<CustomView />"];
+    UIView *view = [interfaceBuilder build];
 
     assertThat(view, isA([CustomView class]));
 }
 
 - (void)testCreatesCustomViewWithSubviews
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<CustomView> <UIButton /> </CustomView>"];
 
-    UIView *view = [interfaceBuilder buildFromString:@"<CustomView> <UIButton /> </CustomView>"];
+    UIView *view = [interfaceBuilder build];
 
     assertThat([view.subviews lastObject], isA([UIButton class]));
 }
@@ -113,45 +122,54 @@
 #pragma mark - Unhappy flows
 - (void)testBadInput
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"Not correct input"];
 
-    UIView *view = [interfaceBuilder buildFromString:@"Not correct input"];
+    UIView *view = [interfaceBuilder build];
 
     assertThat(view, nilValue());
 }
 
 - (void)testNilInput
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:nil];
 
-    UIView *view = [interfaceBuilder buildFromString:nil];
+    UIView *view = [interfaceBuilder build];
 
     assertThat(view, nilValue());
 }
 
 - (void)testRootElementUnknownClass
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<SomeUnknownView />"];
 
-    UIView *view = [interfaceBuilder buildFromString:@"<SomeUnknownView />"];
+    UIView *view = [interfaceBuilder build];
 
     assertThat(view, nilValue());
 }
 
 - (void)testNestedElementUnknownClass
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UIView> <SomeUnknownView /> </UIView>"];
 
-    UIView *view = [interfaceBuilder buildFromString:@"<UIView> <SomeUnknownView /> </UIView>"];
+    UIView *view = [interfaceBuilder build];
 
     assertThat(view, nilValue());
 }
 
 - (void)testElementIsNotUIViewSubclass
 {
-    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<NSString> <UIView /> </NSString>"];
 
-    UIView *view = [interfaceBuilder buildFromString:@"<NSString> <UIView /> </NSString>"];
+    UIView *view = [interfaceBuilder build];
+
+    assertThat(view, nilValue());
+}
+
+- (void)testMultipleRootElements
+{
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UIView /><UILabel />"];
+
+    UIView *view = [interfaceBuilder build];
 
     assertThat(view, nilValue());
 }

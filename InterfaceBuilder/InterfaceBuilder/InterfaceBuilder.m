@@ -42,59 +42,37 @@
 
 #pragma mark - Interface builder
 
-@interface InterfaceBuilder () <NSXMLParserDelegate>
+@interface InterfaceBuilder () <InterfaceParserDelegate>
+@property (nonatomic, strong) id<InterfaceParserProtocol> parser;
 @property (nonatomic, strong) UIView *rootView;
 @property (nonatomic, strong) NSMutableArray *stack;
-@property (nonatomic, assign) BOOL errorOccurred;
 @end
 
 @implementation InterfaceBuilder
 
-- (UIView *)buildFromString:(NSString *)string
+- (instancetype)initWithInterfaceParser:(id<InterfaceParserProtocol>)parser
 {
+    self = [super init];
+    if (self) {
+        _parser = parser;
+        _parser.delegate = self;
+    }
+
+    return self;
+}
+
+- (UIView *)build
+{
+    self.rootView = nil;
     self.stack = [[NSMutableArray alloc] init];
 
-    NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
-    NSXMLParser *parser = [[NSXMLParser alloc] initWithData:data];
-    parser.delegate = self;
-    [parser parse];
+    [self.parser parse];
 
-    if (self.errorOccurred) {
+    if (self.parser.error != nil) {
         return nil;
     }
 
     return self.rootView;
-}
-
-#pragma mark - NSXMLParserDelegate
-- (void)parser:(NSXMLParser *)parser
-        didStartElement:(NSString *)elementName
-        namespaceURI:(nullable NSString *)namespaceURI
-        qualifiedName:(nullable NSString *)qName
-        attributes:(NSDictionary<NSString *, NSString *> *)attributeDict
-{
-    UIView *view = [self getViewFromClassString:elementName];
-    if (view == nil) {
-        self.errorOccurred = YES;
-        return;
-    }
-
-    if (self.rootView == nil) {
-        self.rootView = view;
-    } else {
-        UIView *topView = [self.stack lastObject];
-        [topView addSubview:view];
-    }
-
-    [self.stack addObject:view];
-}
-
-- (void)parser:(NSXMLParser *)parser
- didEndElement:(NSString *)elementName
-  namespaceURI:(NSString *)namespaceURI
- qualifiedName:(NSString *)qName
-{
-    [self.stack removeLastObject];
 }
 
 #pragma mark - View creation
@@ -108,6 +86,30 @@
     }
 
     return view;
+}
+
+#pragma mark - InterfaceParserDelegate
+- (void)interfaceParser:(id <InterfaceParserProtocol>)parser didStartViewWithClassString:(NSString *)classString
+{
+    UIView *view = [self getViewFromClassString:classString];
+    if (view == nil) {
+        [parser abortParsing];
+        return;
+    }
+
+    if (self.rootView == nil) {
+        self.rootView = view;
+    } else {
+        UIView *topView = [self.stack lastObject];
+        [topView addSubview:view];
+    }
+
+    [self.stack addObject:view];
+}
+
+- (void)interfaceParser:(id <InterfaceParserProtocol>)parser didEndViewWithClassString:(NSString *)classString
+{
+    [self.stack removeLastObject];
 }
 
 @end
