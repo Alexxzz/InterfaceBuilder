@@ -45,7 +45,7 @@
         qualifiedName:(nullable NSString *)qName
         attributes:(NSDictionary<NSString *, NSString *> *)attributeDict
 {
-    [self.delegate interfaceParser:self didStartViewWithClassString:elementName];
+    [self.delegate interfaceParser:self didStartViewWithClassString:elementName attributes:attributeDict];
 }
 
 - (void)parser:(NSXMLParser *)parser

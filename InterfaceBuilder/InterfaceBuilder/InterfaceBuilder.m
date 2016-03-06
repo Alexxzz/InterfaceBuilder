@@ -1,56 +1,19 @@
 #import <objc/runtime.h>
+
 #import "InterfaceBuilder.h"
 
-#pragma mark - Node
-
-//@interface Node : NSObject
-//@property (nonatomic, copy) NSString *classString;
-//@property (nonatomic, copy) NSDictionary *attributes;
-//@property (nonatomic, strong) NSArray<Node *> *children;
-//
-//- (instancetype)initWithClassString:(NSString *)classString;
-//
-//- (NSString *)description;
-//
-//+ (instancetype)nodeWithClassString:(NSString *)classString;
-//@end
-//
-//@implementation Node
-//- (instancetype)initWithClassString:(NSString *)classString
-//{
-//    self = [super init];
-//    if (self) {
-//        self.classString = classString;
-//    }
-//    return self;
-//}
-//
-//+ (instancetype)nodeWithClassString:(NSString *)classString
-//{
-//    return [[self alloc] initWithClassString:classString];
-//}
-//
-//- (NSString *)description
-//{
-//    NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: ", NSStringFromClass([self class])];
-//    [description appendFormat:@"self.classString=%@", self.classString];
-//    [description appendFormat:@", self.children=%@", self.children];
-//    [description appendString:@">"];
-//    return description;
-//}
-//@end
 
 #pragma mark - Interface builder
 
 @interface InterfaceBuilder () <InterfaceParserDelegate>
-@property (nonatomic, strong) id<InterfaceParserProtocol> parser;
+@property (nonatomic, strong) id <InterfaceParserProtocol> parser;
 @property (nonatomic, strong) UIView *rootView;
 @property (nonatomic, strong) NSMutableArray *stack;
 @end
 
 @implementation InterfaceBuilder
 
-- (instancetype)initWithInterfaceParser:(id<InterfaceParserProtocol>)parser
+- (instancetype)initWithInterfaceParser:(id <InterfaceParserProtocol>)parser
 {
     self = [super init];
     if (self) {
@@ -76,7 +39,8 @@
 }
 
 #pragma mark - View creation
-- (UIView *)getViewFromClassString:(NSString *)classString
+
+- (UIView *)createViewFromClassString:(NSString *)classString
 {
     Class viewClass = NSClassFromString(classString);
     UIView *view = (UIView *) [[viewClass alloc] init];
@@ -88,10 +52,30 @@
     return view;
 }
 
-#pragma mark - InterfaceParserDelegate
-- (void)interfaceParser:(id <InterfaceParserProtocol>)parser didStartViewWithClassString:(NSString *)classString
+static inline void getPropertyType(Class class, NSString *methodName) {
+    Method method = class_getInstanceMethod(class, NSSelectorFromString(methodName));
+    const char *type = method_copyReturnType(method);
+
+    printf("%s : %s\n", methodName.UTF8String, type);
+
+    free((void *) type);
+}
+
+- (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes toView:(UIView *)view
 {
-    UIView *view = [self getViewFromClassString:classString];
+    for (NSString *attr in [attributes allKeys]) {
+        NSString *value = attributes[attr];
+        NSNumber *numValue = @([value integerValue]);
+        [view setValue:numValue forKey:attr];
+    }
+}
+
+#pragma mark - InterfaceParserDelegate
+
+- (void)interfaceParser:(id <InterfaceParserProtocol>)parser didStartViewWithClassString:(NSString *)classString attributes:(NSDictionary *)attributes
+{
+    UIView *view = [self createViewFromClassString:classString];
+    [self setAttributes:attributes toView:view];
     if (view == nil) {
         [parser abortParsing];
         return;

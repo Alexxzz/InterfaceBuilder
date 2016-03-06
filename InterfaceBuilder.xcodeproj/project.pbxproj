@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2C8811A7CEED412BAB1E4D84 /* XMLInterfaceParserTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8817E1717D4800AD79A500 /* XMLInterfaceParserTest.m */; };
 		2C8812BEA98A11C330D65FFB /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C88178D366B7397CAA2B0A4 /* main.m */; };
 		2C8813CBF65D7463A1D4ED7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C88151886C3030BA849F196 /* Assets.xcassets */; };
 		2C8815471C6C3A82EDA93022 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2C881E4384715689C40A0619 /* Info.plist */; };
@@ -44,6 +45,7 @@
 		2C88178D366B7397CAA2B0A4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2C88178E4F5994BA97C16D06 /* InterfaceBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InterfaceBuilder.m; sourceTree = "<group>"; };
 		2C88178EF4611DB1796A90C9 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		2C8817E1717D4800AD79A500 /* XMLInterfaceParserTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLInterfaceParserTest.m; sourceTree = "<group>"; };
 		2C881921159485BDC382E4C3 /* InterfaceBuilderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InterfaceBuilderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C881BC36FCDF87CE53FEDD4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
 		2C881BF4CDD261716173291C /* InterfaceBuilder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InterfaceBuilder.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -123,6 +125,7 @@
 			children = (
 				2C881BC36FCDF87CE53FEDD4 /* Info.plist */,
 				2C881C9AD0A53CDB80419C54 /* InterfaceBuilderTests.m */,
+				2C8817E1717D4800AD79A500 /* XMLInterfaceParserTest.m */,
 			);
 			path = InterfaceBuilderTests;
 			sourceTree = "<group>";
@@ -310,6 +313,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2C881FA947E7F91E8AAFB8D6 /* InterfaceBuilderTests.m in Sources */,
+				2C8811A7CEED412BAB1E4D84 /* XMLInterfaceParserTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

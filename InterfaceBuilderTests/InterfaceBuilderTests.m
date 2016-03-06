@@ -27,6 +27,7 @@
 
 @implementation InterfaceBuilderTests
 
+#pragma mark - Helpers
 - (InterfaceBuilder *)createBuilderWithInterfaceString:(NSString *)string
 {
     XMLInterfaceParser *parser = [[XMLInterfaceParser alloc] initWithString:string];
@@ -34,6 +35,7 @@
     return interfaceBuilder;
 }
 
+#pragma mark - Tests
 - (void)testReadAndBuildInterfaceWithSingleView
 {
     InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UIView />"];
@@ -117,6 +119,16 @@
     UIView *view = [interfaceBuilder build];
 
     assertThat([view.subviews lastObject], isA([UIButton class]));
+}
+
+#pragma mark - Attributes
+- (void)testAttributeIsSetToACorrespondingView
+{
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UIView hidden='1'/>"];
+
+    UIView *view = [interfaceBuilder build];
+
+    assertThatBool(view.hidden, isTrue());
 }
 
 #pragma mark - Unhappy flows

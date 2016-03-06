@@ -4,7 +4,9 @@
 @protocol InterfaceParserProtocol;
 
 @protocol InterfaceParserDelegate <NSObject>
-- (void)interfaceParser:(id<InterfaceParserProtocol>)parser didStartViewWithClassString:(NSString *)class;
+- (void)interfaceParser:(id <InterfaceParserProtocol>)parser
+        didStartViewWithClassString:(NSString *)class
+        attributes:(NSDictionary *)attributes;
 - (void)interfaceParser:(id<InterfaceParserProtocol>)parser didEndViewWithClassString:(NSString *)class;
 @end
 
