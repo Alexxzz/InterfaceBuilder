@@ -122,13 +122,22 @@
 }
 
 #pragma mark - Attributes
-- (void)testAttributeIsSetToACorrespondingView
+- (void)testAttributeIsSetToACorrespondingView_numberValue
 {
     InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UIView hidden='1'/>"];
 
     UIView *view = [interfaceBuilder build];
 
     assertThatBool(view.hidden, isTrue());
+}
+
+- (void)testAttributeIsSetToACorrespondingView_stringValue
+{
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UILabel text='Hello World!'/>"];
+
+    UILabel *label = (UILabel *) [interfaceBuilder build];
+
+    assertThat(label.text, is(@"Hello World!"));
 }
 
 #pragma mark - Unhappy flows

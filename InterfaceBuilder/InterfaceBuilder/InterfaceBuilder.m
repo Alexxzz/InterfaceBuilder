@@ -64,9 +64,18 @@ static inline void getPropertyType(Class class, NSString *methodName) {
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes toView:(UIView *)view
 {
     for (NSString *attr in [attributes allKeys]) {
-        NSString *value = attributes[attr];
-        NSNumber *numValue = @([value integerValue]);
-        [view setValue:numValue forKey:attr];
+        NSString *stringValue = attributes[attr];
+
+        NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
+        f.numberStyle = NSNumberFormatterDecimalStyle;
+        NSNumber *numValue = [f numberFromString:stringValue];
+        id value = nil;
+        if (numValue != nil) {
+            value = numValue;
+        } else {
+            value = stringValue;
+        }
+        [view setValue:value forKey:attr];
     }
 }
 
