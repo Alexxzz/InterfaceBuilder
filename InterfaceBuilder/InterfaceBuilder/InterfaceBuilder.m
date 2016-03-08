@@ -9,6 +9,7 @@
 @property (nonatomic, strong) id <InterfaceParserProtocol> parser;
 @property (nonatomic, strong) UIView *rootView;
 @property (nonatomic, strong) NSMutableArray *stack;
+@property (nonatomic, strong) NSNumberFormatter *formatter;
 @end
 
 @implementation InterfaceBuilder
@@ -39,7 +40,6 @@
 }
 
 #pragma mark - View creation
-
 - (UIView *)createViewFromClassString:(NSString *)classString
 {
     Class viewClass = NSClassFromString(classString);
@@ -52,35 +52,36 @@
     return view;
 }
 
-static inline void getPropertyType(Class class, NSString *methodName) {
-    Method method = class_getInstanceMethod(class, NSSelectorFromString(methodName));
-    const char *type = method_copyReturnType(method);
-
-    printf("%s : %s\n", methodName.UTF8String, type);
-
-    free((void *) type);
-}
-
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes toView:(UIView *)view
 {
     for (NSString *attr in [attributes allKeys]) {
         NSString *stringValue = attributes[attr];
-
-        NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
-        f.numberStyle = NSNumberFormatterDecimalStyle;
-        NSNumber *numValue = [f numberFromString:stringValue];
-        id value = nil;
-        if (numValue != nil) {
-            value = numValue;
-        } else {
-            value = stringValue;
-        }
-        [view setValue:value forKey:attr];
+        id value = [self getObject:stringValue];
+        [view setValue:value forKeyPath:attr];
     }
 }
 
-#pragma mark - InterfaceParserDelegate
+- (id)getObject:(NSString *)stringValue
+{
+    id value = stringValue;
+    NSNumber *numValue = [self.formatter numberFromString:stringValue];
+    if (numValue != nil) {
+        value = numValue;
+    }
+    return value;
+}
 
+#pragma mark - Formatter
+- (NSNumberFormatter *)formatter
+{
+    if (_formatter == nil) {
+        _formatter = [[NSNumberFormatter alloc] init];
+        _formatter.numberStyle = NSNumberFormatterDecimalStyle;
+    }
+    return _formatter;
+}
+
+#pragma mark - InterfaceParserDelegate
 - (void)interfaceParser:(id <InterfaceParserProtocol>)parser didStartViewWithClassString:(NSString *)classString attributes:(NSDictionary *)attributes
 {
     UIView *view = [self createViewFromClassString:classString];

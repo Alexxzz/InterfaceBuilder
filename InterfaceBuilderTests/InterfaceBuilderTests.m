@@ -140,6 +140,15 @@
     assertThat(label.text, is(@"Hello World!"));
 }
 
+- (void)testAttributeIsSetByKeyPath
+{
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UIView layer.cornerRadius='5.5'/>"];
+
+    UIView *view = [interfaceBuilder build];
+
+    assertThatFloat(view.layer.cornerRadius, is(@5.5));
+}
+
 #pragma mark - Unhappy flows
 - (void)testBadInput
 {
