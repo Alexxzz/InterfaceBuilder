@@ -149,6 +149,24 @@
     assertThatFloat(view.layer.cornerRadius, is(@5.5));
 }
 
+- (void)testUnknownAttribute
+{
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UIView text='100'/>"];
+
+    UIView *view = [interfaceBuilder build];
+
+    assertThat(view, isNot(nilValue()));
+}
+
+- (void)testSettingNumberAsStringToStringAttribute
+{
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UILabel text='100'/>"];
+
+    UILabel *label = (UILabel *) [interfaceBuilder build];
+
+    assertThat(label.text, is(@"100"));
+}
+
 #pragma mark - Unhappy flows
 - (void)testBadInput
 {

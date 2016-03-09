@@ -40,6 +40,7 @@
 }
 
 #pragma mark - View creation
+
 - (UIView *)createViewFromClassString:(NSString *)classString
 {
     Class viewClass = NSClassFromString(classString);
@@ -56,22 +57,63 @@
 {
     for (NSString *attr in [attributes allKeys]) {
         NSString *stringValue = attributes[attr];
-        id value = [self getObject:stringValue];
-        [view setValue:value forKeyPath:attr];
+        id value = [self convertAttribute:attr withValue:stringValue forView:view];
+
+        @try {
+            [view setValue:value forKeyPath:attr];
+        } @catch (NSException *e) {
+            NSLog(@"setAttributes Exception: %@", e);
+        }
     }
 }
 
-- (id)getObject:(NSString *)stringValue
+- (id)convertAttribute:(NSString *)attribute withValue:(NSString *)stringValue forView:(UIView *)view
 {
     id value = stringValue;
-    NSNumber *numValue = [self.formatter numberFromString:stringValue];
-    if (numValue != nil) {
-        value = numValue;
+
+    Class propertyClass = [self classOfPropertyNamed:attribute inClass:[view class]];
+    if ([propertyClass isEqual:[NSString class]] == NO) {
+        NSNumber *numValue = [self.formatter numberFromString:stringValue];
+        if (numValue != nil) {
+            value = numValue;
+        }
     }
+
     return value;
 }
 
+- (Class)classOfPropertyNamed:(NSString *)propertyName inClass:(Class)class
+{
+    Class propertyClass = nil;
+    objc_property_t property = class_getProperty(class, [propertyName UTF8String]);
+    if (property == nil) {
+        return nil;
+    }
+    NSString *propertyAttributes = [NSString stringWithCString:property_getAttributes(property) encoding:NSUTF8StringEncoding];
+    NSArray *splitPropertyAttributes = [propertyAttributes componentsSeparatedByString:@","];
+    if (splitPropertyAttributes.count > 0) {
+        NSString *encodeType = splitPropertyAttributes[0];
+        NSArray *splitEncodeType = [encodeType componentsSeparatedByString:@"\""];
+        NSString *className = splitEncodeType[1];
+        propertyClass = NSClassFromString(className);
+    }
+    return propertyClass;
+}
+
+- (void)addView:(UIView *)view
+{
+    if (self.rootView == nil) {
+        self.rootView = view;
+    } else {
+        UIView *topView = [self.stack lastObject];
+        [topView addSubview:view];
+    }
+
+    [self.stack addObject:view];
+}
+
 #pragma mark - Formatter
+
 - (NSNumberFormatter *)formatter
 {
     if (_formatter == nil) {
@@ -82,23 +124,17 @@
 }
 
 #pragma mark - InterfaceParserDelegate
+
 - (void)interfaceParser:(id <InterfaceParserProtocol>)parser didStartViewWithClassString:(NSString *)classString attributes:(NSDictionary *)attributes
 {
     UIView *view = [self createViewFromClassString:classString];
-    [self setAttributes:attributes toView:view];
     if (view == nil) {
         [parser abortParsing];
         return;
     }
 
-    if (self.rootView == nil) {
-        self.rootView = view;
-    } else {
-        UIView *topView = [self.stack lastObject];
-        [topView addSubview:view];
-    }
-
-    [self.stack addObject:view];
+    [self setAttributes:attributes toView:view];
+    [self addView:view];
 }
 
 - (void)interfaceParser:(id <InterfaceParserProtocol>)parser didEndViewWithClassString:(NSString *)classString
