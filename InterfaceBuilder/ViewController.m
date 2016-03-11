@@ -1,4 +1,6 @@
 #import "ViewController.h"
+#import "InterfaceBuilder.h"
+#import "XMLInterfaceParser.h"
 
 @interface ViewController ()
 
@@ -6,16 +8,28 @@
 
 @implementation ViewController
 
+- (void)loadView
+{
+    InterfaceBuilder *builder = [self createBuilderWithInterfaceString:@
+            "<UIView>"
+                "<UILabel text='Hello World!!!' x='20' y='100' width='200' height='30' />"
+            "</UIView>"
+    ];
+    self.view = [builder build];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
+
+    self.view.backgroundColor = [UIColor whiteColor];
 }
 
-- (void)didReceiveMemoryWarning
+- (InterfaceBuilder *)createBuilderWithInterfaceString:(NSString *)string
 {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    XMLInterfaceParser *parser = [[XMLInterfaceParser alloc] initWithString:string];
+    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] initWithInterfaceParser:parser];
+    return interfaceBuilder;
 }
 
 @end

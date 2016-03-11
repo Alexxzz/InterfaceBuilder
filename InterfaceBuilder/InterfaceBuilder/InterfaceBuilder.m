@@ -94,8 +94,10 @@
     if (splitPropertyAttributes.count > 0) {
         NSString *encodeType = splitPropertyAttributes[0];
         NSArray *splitEncodeType = [encodeType componentsSeparatedByString:@"\""];
-        NSString *className = splitEncodeType[1];
-        propertyClass = NSClassFromString(className);
+        if (splitEncodeType.count > 1) {
+            NSString *className = splitEncodeType[1];
+            propertyClass = NSClassFromString(className);
+        }
     }
     return propertyClass;
 }

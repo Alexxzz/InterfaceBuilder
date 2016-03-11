@@ -167,6 +167,37 @@
     assertThat(label.text, is(@"100"));
 }
 
+#pragma mark - Frame layout
+- (void)testSettingFrameParameters
+{
+    CGRect viewFrame = CGRectMake(10, 10, 200, 150);
+    CGRect subviewFrame = CGRectMake(5, 5, 100, 50);
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@
+            "<UIView x='10' y='10' width='200' height='150'>"
+                "<UILabel x='5' y='5' width='100' height='50' /> "
+            "</UIView>"];
+
+    UIView *view = [interfaceBuilder build];
+    UILabel *subview = [view.subviews firstObject];
+    assertThatBool(CGRectEqualToRect(view.frame, viewFrame), isTrue());
+    assertThatBool(CGRectEqualToRect(subview.frame, subviewFrame), isTrue());
+}
+
+- (void)testSettingFrameParameters_centerPoint
+{
+    CGPoint viewCenterPoint = CGPointMake(10, 20);
+    CGPoint subviewCenterPoint = CGPointMake(30, 40);
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@
+            "<UIView centerX='10' centerY='20'>"
+                "<UILabel centerX='30' centerY='40'/> "
+            "</UIView>"];
+
+    UIView *view = [interfaceBuilder build];
+    UILabel *subview = [view.subviews firstObject];
+    assertThatBool(CGPointEqualToPoint(view.center, viewCenterPoint), isTrue());
+    assertThatBool(CGPointEqualToPoint(subview.center, subviewCenterPoint), isTrue());
+}
+
 #pragma mark - Unhappy flows
 - (void)testBadInput
 {

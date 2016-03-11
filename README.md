@@ -1,6 +1,6 @@
 # InterfaceBuilder
 
-## Road map/possibilities
+## Road map/features
 
 Basic possibilities:
 - [x] Read interface from some kind of a source (XML)
@@ -22,6 +22,9 @@ Base UIView and UIViewController classes:
 
 Live reload:
 - [ ] Track source file and recreate IBView/IBViewController when it's changed
+
+Error reporting:
+- [ ] Provide user with useful error feedback when something goes wrong 
 
 Styling:
 - [ ] ???
