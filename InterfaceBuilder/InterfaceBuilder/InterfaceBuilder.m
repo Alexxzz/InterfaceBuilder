@@ -10,6 +10,7 @@
 @property (nonatomic, strong) UIView *rootView;
 @property (nonatomic, strong) NSMutableArray *stack;
 @property (nonatomic, strong) NSNumberFormatter *formatter;
+@property (nonatomic, strong) NSSet *plugins;
 @end
 
 @implementation InterfaceBuilder
@@ -137,11 +138,49 @@
 
     [self setAttributes:attributes toView:view];
     [self addView:view];
+
+    [self notifyPluginsWithView:view viewClassName:classString attributes:attributes];
 }
 
 - (void)interfaceParser:(id <InterfaceParserProtocol>)parser didEndViewWithClassString:(NSString *)classString
 {
     [self.stack removeLastObject];
+}
+
+#pragma mark - Plugins
+- (void)addPlugin:(id <InterfaceBuilderPluginProtocol>)plugin
+{
+    if (plugin == nil) {
+        return;
+    }
+
+    if (self.plugins == nil) {
+        self.plugins = [[NSSet alloc] init];
+    }
+
+    self.plugins = [self.plugins setByAddingObject:plugin];
+}
+
+- (BOOL)containsPlugin:(id <InterfaceBuilderPluginProtocol>)plugin
+{
+    return [self.plugins containsObject:plugin];
+}
+
+- (void)removePlugin:(id <InterfaceBuilderPluginProtocol>)plugin
+{
+    self.plugins = [self.plugins objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+        return ([plugin isEqual:obj] == NO);
+    }];
+}
+
+- (void)notifyPluginsWithView:(UIView *)view viewClassName:(NSString *)name attributes:(NSDictionary *)attributes
+{
+    for (id <InterfaceBuilderPluginProtocol> plugin in self.plugins) {
+        [plugin interfaceBuilder:self
+                    didBuildView:view
+                     ofClassName:name
+                  withAttributes:attributes];
+    }
 }
 
 @end

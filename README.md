@@ -8,9 +8,10 @@ Basic possibilities:
 - [x] Organize subviews according to source hierarchy
 - [x] Read parameters 
 - [x] Set parameters to view instances - Primitives (integer, floating point), NSNumber, NSString
+- [x] Plugin system
  
 Layout:
-- [ ] Basic frame layout using x, y, width and height parameters
+- [x] Basic frame layout using x, y, width and height parameters
 - [ ] Autolayout
 - [ ] Relative autolayout
 - [ ] Stack layout

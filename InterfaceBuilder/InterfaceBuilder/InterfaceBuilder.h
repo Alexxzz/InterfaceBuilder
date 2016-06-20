@@ -2,6 +2,7 @@
 #import <UIKit/UIKit.h>
 
 @protocol InterfaceParserProtocol;
+@class InterfaceBuilder;
 
 @protocol InterfaceParserDelegate <NSObject>
 - (void)interfaceParser:(id <InterfaceParserProtocol>)parser
@@ -17,7 +18,23 @@
 - (void)abortParsing;
 @end
 
+@protocol InterfaceBuilderPluginProtocol <NSObject>
+- (void)interfaceBuilder:(InterfaceBuilder *)interfaceBuilder
+            didBuildView:(UIView *)view
+             ofClassName:(NSString *)className
+          withAttributes:(NSDictionary *)attributes;
+//
+//- (void)interfaceBuilder:(InterfaceBuilder *)interfaceBuilder
+//           didFinishWith:(UIView *)view;
+@end
+
 @interface InterfaceBuilder : NSObject
 - (instancetype)initWithInterfaceParser:(id<InterfaceParserProtocol>)parser;
+
 - (UIView *)build;
+
+- (void)addPlugin:(id <InterfaceBuilderPluginProtocol>)plugin;
+- (BOOL)containsPlugin:(id <InterfaceBuilderPluginProtocol>)plugin;
+
+- (void)removePlugin:(id <InterfaceBuilderPluginProtocol>)plugin;
 @end

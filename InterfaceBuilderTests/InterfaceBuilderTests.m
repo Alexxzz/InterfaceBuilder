@@ -9,10 +9,11 @@
 #import <XCTest/XCTest.h>
 
 #import <OCHamcrest/OCHamcrest.h>
-#import <OCMockito/OCMockito.h>
 
 #import "InterfaceBuilder.h"
 #import "XMLInterfaceParser.h"
+
+#import "PluginDoubles.h"
 
 
 #pragma mark - Custom view
@@ -167,35 +168,54 @@
     assertThat(label.text, is(@"100"));
 }
 
-#pragma mark - Frame layout
-- (void)testSettingFrameParameters
+#pragma mark - Plugin system
+- (void)testAddingPlugin
 {
-    CGRect viewFrame = CGRectMake(10, 10, 200, 150);
-    CGRect subviewFrame = CGRectMake(5, 5, 100, 50);
-    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@
-            "<UIView x='10' y='10' width='200' height='150'>"
-                "<UILabel x='5' y='5' width='100' height='50' /> "
-            "</UIView>"];
+    id<InterfaceBuilderPluginProtocol> plugin = [[PluginDummy alloc] init];
+    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
 
-    UIView *view = [interfaceBuilder build];
-    UILabel *subview = [view.subviews firstObject];
-    assertThatBool(CGRectEqualToRect(view.frame, viewFrame), isTrue());
-    assertThatBool(CGRectEqualToRect(subview.frame, subviewFrame), isTrue());
+    [interfaceBuilder addPlugin:plugin];
+    BOOL hasPlugin = [interfaceBuilder containsPlugin:plugin];
+
+    assertThatBool(hasPlugin, isTrue());
 }
 
-- (void)testSettingFrameParameters_centerPoint
+- (void)testRemovingPlugin
 {
-    CGPoint viewCenterPoint = CGPointMake(10, 20);
-    CGPoint subviewCenterPoint = CGPointMake(30, 40);
-    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@
-            "<UIView centerX='10' centerY='20'>"
-                "<UILabel centerX='30' centerY='40'/> "
-            "</UIView>"];
+    id<InterfaceBuilderPluginProtocol> plugin = [[PluginDummy alloc] init];
+    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+
+    [interfaceBuilder addPlugin:plugin];
+    [interfaceBuilder removePlugin:plugin];
+    BOOL hasPlugin = [interfaceBuilder containsPlugin:plugin];
+
+    assertThatBool(hasPlugin, isFalse());
+}
+
+- (void)testAddingNilPlugin
+{
+    InterfaceBuilder *interfaceBuilder = [[InterfaceBuilder alloc] init];
+
+    [interfaceBuilder addPlugin:nil];
+    BOOL hasPlugin = [interfaceBuilder containsPlugin:nil];
+
+    assertThatBool(hasPlugin, isFalse());
+}
+
+- (void)testPluginKnowsWhichViewIsCreated
+{
+    Class viewClass = [UILabel class];
+    NSDictionary *params = @{@"text": @"Hello World!"};
+
+    InterfaceBuilder *interfaceBuilder = [self createBuilderWithInterfaceString:@"<UILabel text='Hello World!'/>"];
+    PluginSpy *pluginSpy = [[PluginSpy alloc] init];
+    [interfaceBuilder addPlugin:pluginSpy];
 
     UIView *view = [interfaceBuilder build];
-    UILabel *subview = [view.subviews firstObject];
-    assertThatBool(CGPointEqualToPoint(view.center, viewCenterPoint), isTrue());
-    assertThatBool(CGPointEqualToPoint(subview.center, subviewCenterPoint), isTrue());
+
+    assertThat(pluginSpy.view, equalTo(view));
+    assertThat(pluginSpy.viewClass, equalTo(viewClass));
+    assertThat(pluginSpy.params, equalTo(params));
 }
 
 #pragma mark - Unhappy flows
